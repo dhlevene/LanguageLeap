@@ -171,11 +171,17 @@ class _MyHomePageState extends State<MyHomePage> {
       return null;
     }
     print('inside take picture function!');
-    final Directory extDir = await getExternalStorageDirectory();
-    final String dirPath = '${extDir.path}/Pictures/flutter_test';
-    await Directory(dirPath).create(recursive: true);
-    final String filePath = '$dirPath/${timestamp()}.jpg';
-    print('path: $filePath');
+    //final Directory extDir = await getExternalStorageDirectory();
+    // final String dirPath = '${extDir.path}/Pictures/flutter_test';
+    // await Directory(dirPath).create(recursive: true);
+    // final String filePath = '$dirPath/${timestamp()}.jpg';
+    // print('path: $filePath');
+
+    final Directory intDir = await getApplicationDocumentsDirectory();
+    final String intDirPath = '${intDir.path}/Pictures/flutter_test';
+    await Directory(intDirPath).create(recursive: true);
+    final String intFilePath = '/${timestamp()}.jpg';
+    print('path2: $intFilePath');
 
     if (controller.value.isTakingPicture) {
       // A capture is already pending, do nothing.
@@ -183,12 +189,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
-      await controller.takePicture(filePath);
+      await controller.takePicture(intFilePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
-    return filePath;
+    return intFilePath;
   }
 
   Widget camera() {
