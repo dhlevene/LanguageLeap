@@ -167,6 +167,10 @@ class _MyHomePageState extends State<MyHomePage> {
               ? onTakePictureButtonPressed
               : null,
         ),
+        Text(
+          label == null ? "English Word: " : "English Word: $label",
+          style: TextStyle(fontSize: 18.0, fontWeight: FontWeight.bold),
+        )
       ],
     );
   }
@@ -254,9 +258,9 @@ class _MyHomePageState extends State<MyHomePage> {
     File file = new File(imagePath);
       
     List<int> fileBytes = file.readAsBytesSync();
-    print('filebytes: $fileBytes');
+    //print('filebytes: $fileBytes');
     String base64Image = base64Encode(fileBytes);
-    print('base64 $base64Image');
+    //print('base64 $base64Image');
     return base64Image;
   }
 
@@ -292,7 +296,7 @@ class _MyHomePageState extends State<MyHomePage> {
     
     Map<String, dynamic> test = jsonDecode(reply);
 
-   // print('Test json ${test['responses'][0]['labelAnnotations'][0]['description']}');
+   print('Test json: $test');
 
     return test['responses'][0]['labelAnnotations'][0]['description'];
   }
