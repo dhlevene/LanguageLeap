@@ -113,7 +113,6 @@ class _MyHomePageState extends State<MyHomePage> {
       if (mounted) {
         setState(() {
           imagePath = filePath;
-          
         });
       }
     });
@@ -214,6 +213,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> takePicture() async {
     if (!controller.value.isInitialized) {
+      print("not initialized yet");
       return null;
     }
 
@@ -236,6 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
     // print('path: $filePath');
 
     if (controller.value.isTakingPicture) {
+      print("taking picture already");
       // A capture is already pending, do nothing.
       return null;
     }
@@ -276,7 +277,7 @@ class _MyHomePageState extends State<MyHomePage> {
             "features": [
               {
                 "type" : "LABEL_DETECTION",
-                "maxResults" : 1
+                "maxResults" : 3
               }
             ]
           }
