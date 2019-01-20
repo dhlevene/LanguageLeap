@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:io';
 import 'dart:convert';
+import 'dart:core';
 
 class Language {
   const Language(this.language);
@@ -170,28 +171,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Future<String> translate(String text) async
-  {
+  Future<String> translate(String text) async {
     GoogleTranslator translator = GoogleTranslator();
     
     var translation = await translator.translate(text, from: 'en', to: 'es');
     print("translation: " + translation);
 
     return translation;
-  }
-
-  bool checkAns(String ans, String translation)
-  {
-    if (ans == translation)
-    {
-      _onCorrect();
-      return true;
-    }
-    else
-    {
-      _onIncorrect();
-      return false;
-    }
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -342,9 +328,71 @@ class _MyHomePageState extends State<MyHomePage> {
 
   final myController = TextEditingController();
 
-  void _checkAnswer() {
-    print('checking answer...');
-    // compare text to another language
+  
+  Future checkAns(String ans) async {
+    String s = await translate(label);
+    ans = ans.toLowerCase();
+    if (ans == s) {
+      _onCorrect();
+      _popup(true);
+      return;
+    } else {
+      _onIncorrect();
+      _popup(false);
+      return;
+    }
+  }
+
+  Future<void> _popup(bool correct) async {
+    correct
+      ? showDialog<void>(
+    context: context,
+    barrierDismissible: false, // user must tap button!
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Answer'),
+        content: SingleChildScrollView(
+          child: ListBody(
+            children: <Widget>[
+              Text('Congrats thats correct!'),
+            ],
+          ),
+        ),
+        actions: <Widget>[
+          FlatButton(
+            child: Text('YAY'),
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+          ),
+        ],
+      );
+    },
+  )
+  : showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Answer'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Sorry, but that answer is wrong.'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Damn...'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget inputText() {
@@ -358,8 +406,12 @@ class _MyHomePageState extends State<MyHomePage> {
             print("Text field: $text");
           },
           onSubmitted: (String text) {
-            setState(() {_answer = text;});
-            _checkAnswer();
+            myController.clear();
+            setState(() {
+              _textFieldEnabled = false;
+              _answer = text;
+              checkAns(_answer);
+            });
           },
           decoration: InputDecoration(
             hintText: 'You get points for answering right',
