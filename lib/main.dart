@@ -171,11 +171,23 @@ class _MyHomePageState extends State<MyHomePage> {
       return null;
     }
     print('inside take picture function!');
+    // final Directory extDir = await getTemporaryDirectory();
+    // final String dirPath = '${extDir.path}/Pictures/flutter_test';
+    // await Directory(dirPath).create(recursive: true);
+    // final String filePath = '$dirPath/${timestamp()}.jpg';
+    // print('path: $filePath');
+
     final Directory extDir = await getExternalStorageDirectory();
     final String dirPath = '${extDir.path}/Pictures/flutter_test';
     await Directory(dirPath).create(recursive: true);
     final String filePath = '$dirPath/${timestamp()}.jpg';
     print('path: $filePath');
+
+    // final Directory extDir = await getApplicationDocumentsDirectory();
+    // final String dirPath = '${extDir.path}/Pictures/flutter_test';
+    // await Directory(dirPath).create(recursive: true);
+    // final String filePath = '$dirPath/${timestamp()}.jpg';
+    // print('path: $filePath');
 
     if (controller.value.isTakingPicture) {
       // A capture is already pending, do nothing.
