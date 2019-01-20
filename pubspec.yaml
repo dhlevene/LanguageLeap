@@ -19,6 +19,7 @@ dependencies:
   video_player: ^0.5.2
   camera:
   path_provider: ^0.4.1
+  translator: ^0.1.0+5
 
     
 

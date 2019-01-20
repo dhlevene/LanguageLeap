@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:translator/translator.dart';
+
 import 'dart:async';
 import 'dart:io';
 
@@ -195,12 +197,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
-      await controller.takePicture(filePath);
+      await controller.takePicture(intFilePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
-    return filePath;
+    return intFilePath;
   }
 
   Widget camera() {
