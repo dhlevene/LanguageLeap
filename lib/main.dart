@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:translator/translator.dart';
+import 'package:http/http.dart' as http;
+
 
 import 'dart:async';
 import 'dart:io';
@@ -9,6 +11,7 @@ import 'dart:io';
 List<CameraDescription> cameras;
 
 Future<void> main() async {
+
   cameras = await availableCameras();
   runApp(MyApp());
 }
@@ -99,10 +102,11 @@ class _MyHomePageState extends State<MyHomePage> {
       if (mounted) {
         setState(() {
           imagePath = filePath;
+          
         });
       }
     });
-  }  
+  }
 
   Widget _cameraPreviewWidget() {
     if (controller == null || !controller.value.isInitialized) {
@@ -138,6 +142,30 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+  }
+
+  Future<String> translate(String text) async
+  {
+    GoogleTranslator translator = GoogleTranslator();
+    
+    var translation = await translator.translate(text, from: 'en', to: 'es');
+    print("translation: " + translation);
+
+    return translation;
+  }
+
+  bool checkAns(String ans, String translation)
+  {
+    if (ans == translation)
+    {
+      _onCorrect();
+      return true;
+    }
+    else
+    {
+      _onIncorrect();
+      return false;
+    }
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -197,12 +225,12 @@ class _MyHomePageState extends State<MyHomePage> {
     }
 
     try {
-      await controller.takePicture(intFilePath);
+      await controller.takePicture(filePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
-    return intFilePath;
+    return filePath;
   }
 
   Widget camera() {
