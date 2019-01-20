@@ -74,6 +74,7 @@ class _MyHomePageState extends State<MyHomePage> {
   CameraController controller;
   bool _textFieldEnabled = false;
   String _answer;
+  Language selectedLanguage = null;
 
   void _onCorrect() {
     setState(() {
@@ -176,9 +177,26 @@ class _MyHomePageState extends State<MyHomePage> {
 
   Future<String> translate(String text) async {
     GoogleTranslator translator = GoogleTranslator();
+    var translation;
+    if (selectedLanguage.language == 'Spanish')
+    {
+       translation = await translator.translate(text, from: 'en', to: 'es');
+      print("translation: " + translation);
+    }
+    else if (selectedLanguage.language == 'French')
+    {
+       translation = await translator.translate(text, from: 'en', to: 'fr');
+      print("translation: " + translation);
+    }
     
-    var translation = await translator.translate(text, from: 'en', to: 'es');
-    print("translation: " + translation);
+    else if (selectedLanguage.language == 'German')
+    {
+       translation = await translator.translate(text, from: 'en', to: 'de');
+      print("translation: " + translation);
+    }
+    
+    
+
 
     return translation;
   }
@@ -339,27 +357,27 @@ class _MyHomePageState extends State<MyHomePage> {
     ans = ans.toLowerCase();
     if (ans == s) {
       _onCorrect();
-      _popup(true);
+      _popup(true, ans, s);
       return;
     } else {
       _onIncorrect();
-      _popup(false);
+      _popup(false, ans, s);
       return;
     }
   }
 
-  Future<void> _popup(bool correct) async {
+  Future<void> _popup(bool correct, String ans, String correctAns) async {
     correct
       ? showDialog<void>(
     context: context,
     barrierDismissible: false, // user must tap button!
     builder: (BuildContext context) {
       return AlertDialog(
-        title: Text('Answer'),
+        title: Text('Answer: $ans'),
         content: SingleChildScrollView(
           child: ListBody(
             children: <Widget>[
-              Text('Congrats thats correct!'),
+              Text('That is correct!'),
             ],
           ),
         ),
@@ -379,11 +397,12 @@ class _MyHomePageState extends State<MyHomePage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Answer'),
+          title: Text('Answer: $ans'),
           content: SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
-                Text('Sorry, but that answer is wrong.'),
+                Text('Sorry, that was wrong.'),
+                Text('The correct answer was: $correctAns'),
               ],
             ),
           ),
@@ -433,9 +452,6 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  
-
-  Language selectedUser;
   List<Language> languages = <Language>[const Language('Spanish'), const Language('French'), const Language('German')];
 
   Widget dropdown() {
@@ -444,10 +460,10 @@ class _MyHomePageState extends State<MyHomePage> {
         padding: const EdgeInsets.all(0.0),
         child: DropdownButton(
           elevation: 20,
-          value: selectedUser,
+          value: selectedLanguage,
           onChanged: (Language newValue) {
             setState(() {
-              selectedUser = newValue;
+              selectedLanguage = newValue;
             });
           },
           items: languages.map((Language language) {
