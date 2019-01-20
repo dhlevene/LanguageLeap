@@ -287,10 +287,12 @@ class _MyHomePageState extends State<MyHomePage> {
     // todo - you should check the response.statusCode
     String reply = await response.transform(utf8.decoder).join();
     httpClient.close();
+    
+    Map<String, dynamic> test = jsonDecode(reply);
 
-    List responseData = jsonDecode(reply);
+   // print('Test json ${test['responses'][0]['labelAnnotations'][0]['description']}');
 
-    return responseData[1];
+    return test['responses'][0]['labelAnnotations'][0]['description'];
   }
 
   Widget camera() {
