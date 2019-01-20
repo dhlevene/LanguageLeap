@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:translator/translator.dart';
-
+import 'package:http/http.dart' as http;
 import 'dart:async';
 import 'dart:io';
+import 'dart:convert';
 
 class Language {
   const Language(this.language);
@@ -15,6 +16,7 @@ class Language {
 List<CameraDescription> cameras;
 
 Future<void> main() async {
+
   cameras = await availableCameras();
   runApp(MyApp());
 }
@@ -66,6 +68,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _numWrong = 0;
   int _numRight = 0;
   String imagePath;
+  String base64Image;
+  String label;
   CameraController controller;
   bool _textFieldEnabled = false;
   String _answer;
@@ -108,9 +112,24 @@ class _MyHomePageState extends State<MyHomePage> {
       if (mounted) {
         setState(() {
           imagePath = filePath;
+          
         });
       }
     });
+
+    if(imagePath != null)
+      setState(() {
+          base64Image = processImage(imagePath);
+      });
+
+    if(base64Image != null){
+      classifyImage(base64Image).then((String responseBody){
+        setState(() {
+          label = responseBody;
+          print("label $label");
+        });
+      });
+    }
   }  
 
   Widget _cameraPreviewWidget() {
@@ -149,6 +168,30 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ],
     );
+  }
+
+  Future<String> translate(String text) async
+  {
+    GoogleTranslator translator = GoogleTranslator();
+    
+    var translation = await translator.translate(text, from: 'en', to: 'es');
+    print("translation: " + translation);
+
+    return translation;
+  }
+
+  bool checkAns(String ans, String translation)
+  {
+    if (ans == translation)
+    {
+      _onCorrect();
+      return true;
+    }
+    else
+    {
+      _onIncorrect();
+      return false;
+    }
   }
 
   String timestamp() => DateTime.now().millisecondsSinceEpoch.toString();
@@ -221,7 +264,52 @@ class _MyHomePageState extends State<MyHomePage> {
     return filePath;
   }
 
+  String processImage(String imagePath){
+    File file = new File(imagePath);
+      
+    List<int> fileBytes = file.readAsBytesSync();
+    print('filebytes: $fileBytes');
+    String base64Image = base64Encode(fileBytes);
+    print('base64 $base64Image');
+    return base64Image;
+  }
 
+  Future<String> classifyImage(String base64Image) async{
+
+    String googleVisionEndpoint = "https://vision.googleapis.com/v1/images:annotate?key=AIzaSyDKVljgt5f4I2dFcALCtwRBlRVnBCbHvy8";
+    Map map = {
+      "requests" : [
+          {
+            "image" : {
+              "content" : base64Image
+            },
+            "features": [
+              {
+                "type" : "LABEL_DETECTION",
+                "maxResults" : 1
+              }
+            ]
+          }
+        ]
+      };
+    
+    HttpClient httpClient = new HttpClient();
+    HttpClientRequest request = await httpClient.postUrl(Uri.parse(googleVisionEndpoint));
+
+    request.headers.set('content-type', 'application/json');
+    request.add(utf8.encode(json.encode(map)));
+
+    HttpClientResponse response = await request.close();
+    // todo - you should check the response.statusCode
+    String reply = await response.transform(utf8.decoder).join();
+    httpClient.close();
+    
+    Map<String, dynamic> test = jsonDecode(reply);
+
+   // print('Test json ${test['responses'][0]['labelAnnotations'][0]['description']}');
+
+    return test['responses'][0]['labelAnnotations'][0]['description'];
+  }
 
   Widget camera() {
     return Scaffold(
