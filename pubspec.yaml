@@ -20,7 +20,7 @@ dependencies:
   camera:
   path_provider: ^0.4.1
   translator: ^0.1.0+5
-
+  googleapis: ^0.52.0
     
 
   # The following adds the Cupertino Icons font to your application.
