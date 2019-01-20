@@ -6,6 +6,12 @@ import 'package:translator/translator.dart';
 import 'dart:async';
 import 'dart:io';
 
+class Language {
+  const Language(this.language);
+
+  final String language;
+}
+
 List<CameraDescription> cameras;
 
 Future<void> main() async {
@@ -33,7 +39,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Language Leap',
       theme: ThemeData(
-        primarySwatch: Colors.teal,
+        primarySwatch: Colors.deepOrange,
       ),
       home: Scaffold(
         appBar: AppBar(
@@ -61,6 +67,8 @@ class _MyHomePageState extends State<MyHomePage> {
   int _numRight = 0;
   String imagePath;
   CameraController controller;
+  bool _textFieldEnabled = false;
+  String _answer;
 
   void _onCorrect() {
     setState(() {
@@ -90,6 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   void dispose() {
     controller?.dispose();
+    myController.dispose();
     super.dispose();
   }
 
@@ -109,7 +118,7 @@ class _MyHomePageState extends State<MyHomePage> {
       return const Text(
         'Tap a camera',
         style: TextStyle(
-          color: Colors.white,
+          color: Colors.black,
           fontSize: 24.0,
           fontWeight: FontWeight.w900,
         ),
@@ -129,7 +138,9 @@ class _MyHomePageState extends State<MyHomePage> {
       children: <Widget>[
         IconButton(
           icon: const Icon(Icons.camera_alt),
-          color: Colors.blue,
+          color: Colors.deepOrange,
+          iconSize: 30,
+          tooltip: 'Take Picture',
           onPressed: controller != null &&
                   controller.value.isInitialized &&
                   !controller.value.isRecordingVideo
@@ -172,7 +183,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (!controller.value.isInitialized) {
       return null;
     }
-    print('inside take picture function!');
+
     // final Directory extDir = await getTemporaryDirectory();
     // final String dirPath = '${extDir.path}/Pictures/flutter_test';
     // await Directory(dirPath).create(recursive: true);
@@ -196,14 +207,21 @@ class _MyHomePageState extends State<MyHomePage> {
       return null;
     }
 
+    setState(() {
+      _textFieldEnabled = true;
+    });
+    print("text field enabled");
+
     try {
-      await controller.takePicture(intFilePath);
+      await controller.takePicture(filePath);
     } on CameraException catch (e) {
       _showCameraException(e);
       return null;
     }
-    return intFilePath;
+    return filePath;
   }
+
+
 
   Widget camera() {
     return Scaffold(
@@ -234,6 +252,73 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  final myController = TextEditingController();
+
+  void _checkAnswer() {
+    print('checking answer...');
+    // compare text to another language
+  }
+
+  Widget inputText() {
+    return Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: TextField(
+          enabled: _textFieldEnabled,
+          controller: myController,
+          onChanged: (text) {
+            print("Text field: $text");
+          },
+          onSubmitted: (String text) {
+            setState(() {_answer = text;});
+            _checkAnswer();
+          },
+          decoration: InputDecoration(
+            hintText: 'You get points for answering right',
+            labelText: 'What is the picture of?' ,
+          ),
+          style: new TextStyle(
+            fontSize: 15.0,
+            color: const Color(0xFF000000),
+            fontWeight: FontWeight.w300,
+            fontFamily: "Roboto",
+          )
+        ),
+      ),
+    );
+  }
+
+  
+
+  Language selectedUser;
+  List<Language> languages = <Language>[const Language('Spanish'), const Language('French'), const Language('German')];
+
+  Widget dropdown() {
+    return new Scaffold(
+      body: Padding(
+        padding: const EdgeInsets.all(0.0),
+        child: DropdownButton(
+          elevation: 20,
+          value: selectedUser,
+          onChanged: (Language newValue) {
+            setState(() {
+              selectedUser = newValue;
+            });
+          },
+          items: languages.map((Language language) {
+            return new DropdownMenuItem<Language>(
+              value: language,
+              child: new Text(
+                language.language,
+                style: new TextStyle(color: Colors.black),
+              ),
+            );
+          }).toList(),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -245,10 +330,10 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(12.0),
                   child: Text(
                     'Score: $_score   Wrong: $_numWrong   Right: $_numRight',
-                    style: Theme.of(context).textTheme.title,
+                    style: Theme.of(context).textTheme.body1,
                   ),
                 )
               ]
@@ -258,16 +343,44 @@ class _MyHomePageState extends State<MyHomePage> {
               mainAxisSize: MainAxisSize.max,
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  padding: const EdgeInsets.all(5.0),
                   child: controller.value.isInitialized == false
                   ? Container()
                   : Container(
-                    height: 300.0,
-                    width: 300.0,
+                    height: 400.0,
+                    width: 265.0,
                     child: AspectRatio(
                       aspectRatio: controller.value.aspectRatio,
                       child: camera(),
                     ),
+                  ),
+                ),
+              ]
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(2.0),
+                  child: Container(
+                    height: 50.0,
+                    width: 250.0,
+                    child: inputText(),
+                  ),
+                ),
+              ]
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.max,
+              children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.all(18.0),
+                  child: Container(
+                    height: 40,
+                    width: 81.0,
+                    child: dropdown(),
                   ),
                 ),
               ]
